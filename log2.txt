@@ -1,0 +1,9 @@
+Global outputpath/home/egors/Research/ExploreSig/example/
+Global dirpath/home/egors/Research/ExploreSig/
+Start time 
+Mon Jul  2 13:53:52 2018
+
+**********
+Start pair 
+['nomLeu3', 'ponAbe2', 'hg38']
+Start chr chr1
