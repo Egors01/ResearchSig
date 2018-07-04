@@ -1,6 +1,6 @@
 import time
 import os
-from tools.set_env import SetUpEnv
+from tools.set_env import Environment
 
 class Logger:
     def __init__(self, source_name='default run log', filename='default_log'):
