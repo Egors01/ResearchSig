@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="d3b82ad3-faa6-44a4-bf04-6de19f4bffa6" name="CoBrain-server" url="http://Egors01@cb.skoltech.ru">
+        <fileTransfer host="Egors01@cb.skoltech.ru" port="22" rootFolder="/home/Egors01" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+      <webServer id="b084cc29-1ef7-43c9-a8b5-e62b25b73d46" name="localhost" url="http://localhost">
+        <fileTransfer port="0" mountedRoot="$PROJECT_DIR$/../local-host" accessType="MOUNT" />
+      </webServer>
+    </option>
+  </component>
+</project>
