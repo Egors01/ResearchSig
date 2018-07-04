@@ -1,3 +1,4 @@
+import os
 OS_TYPE = 'LINUX'
 CHR_NAMES=['chr1', 'chr2', 'chr3', 'chr4',
            'chr5','chr6','chr7','chr8',
@@ -9,10 +10,8 @@ SPECIES_NAMES = ['calJac3','canFam3','chlSab2','gorGor3','hg38','macFas5',\
                  'micMur1','nasLar1','nomLeu3','panPan1','panTro4','papAnu2',\
                  'ponAbe2','rheMac3','rhiRox1','saiBol1','tarSyr2']
 
-
-
-
-
+PRIMARY_PATH = os.path.dirname(os.path.realpath(__file__))
+ALLOWED_NUCLEOTIDE_SYMBOLS=['A','T','G','C','a','t','g','c']
 
 
 

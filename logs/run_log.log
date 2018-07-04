@@ -1,0 +1,17 @@
+default log: Started at Wed Jul  4 15:03:31 2018
+default log: Started pair ['nomLeu3', 'ponAbe2', 'hg38'] 
+default log: Start chr example 
+default log: finished chr example 
+default log: passed time: 0.0 min 0.04 s
+default log: Start chr example2 
+default log: finished chr example2 
+default log: passed time: 0.0 min 0.03 s
+default log: Start chr example3 
+default log: finished chr example3 
+default log: passed time: 0.0 min 0.03 s
+variant_call_pairs log: Ended pair ['nomLeu3', 'ponAbe2', 'hg38'] 
+variant_call_pairs log: passed time: 0.0 min 0.11 s
+to_vcf log: finished vcf
+to_vcf log: finished vcf
+default log: all parts ended at Wed Jul  4 15:03:31 2018
+default log: time passed from start 0.0 min 0.12 s
