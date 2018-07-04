@@ -1,6 +1,4 @@
-from tools.logger import Logger
-from tools.set_env import Environment
-from variantcaller import variant_call_pairs
+from core_scripts.variantcaller import variant_call_pairs
 
 
 PAIRS = [["nomLeu3", "ponAbe2", "hg38"]]

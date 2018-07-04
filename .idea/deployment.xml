@@ -5,7 +5,7 @@
       <paths name="CoBrain-server">
         <serverdata>
           <mappings>
-            <mapping deploy="/test/deploy-test" local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="/find_sig_project/project_path" local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
       </paths>
