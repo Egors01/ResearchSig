@@ -93,7 +93,6 @@ def chr_variant_call(chr_name, sp_name_1="", sp_name_2="", ref_name=''):
                         INFO.append(info)
         # print('IN CALL3')
         if not sp_1 or not sp_2:
-            print('break at ', refpos, docpos)
             break
     SUBS = [nref.upper() + '>' + nmut.upper() for nref, nmut in zip(REF, ALT)]
     for index, sbs in enumerate(SUBS):
@@ -125,11 +124,10 @@ def chr_variant_call(chr_name, sp_name_1="", sp_name_2="", ref_name=''):
 
 
 def df_to_vcf(result, sp_name, sp_pair, refname):
-    final_pair_path = Environment().variant_path
+    final_pair_path = os.path.join(Environment().variant_path,'raw_variants')
     if not os.path.exists(final_pair_path):
         os.makedirs(final_pair_path)
     filename = os.path.join(final_pair_path, sp_name + '_VS_' + sp_pair + '_r.' + refname[:4] + '.vcf')
-    print(filename)
     header = '##fileformat=VCFv4.1 \n'
     header += ('##contig=<ID=' + filename + ', length=111111,assembly=hg38> \n##reference=' + refname + '\n')
     header += '#CHROM POS ID REF ALT QUAL FILTER INFO\n'
@@ -146,7 +144,13 @@ def df_to_vcf(result, sp_name, sp_pair, refname):
     del result['Context']
     result.rename(index=str, columns={"Chr": "ID", "Refpos": "POS", "Ref": "REF", "Alt": "ALT"}, inplace=True)
     result = result[["CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO"]]
+    f=open(filename,'r')
+    HH = []
+    for line in f:
+        HH.append(line.strip())
+    print(HH)
+    f.close()
     with open(filename, 'a') as f:
-        result.to_csv(f, header=False, sep='\t', index=False)
+        result.to_csv(f, header=False, sep='\t', index=False,mode='a')
     Logger(source_name='to_vcf', msg='finished vcf')
     return  # result

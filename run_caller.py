@@ -2,7 +2,7 @@ from core_scripts.variantcaller import variant_call_pairs
 
 
 PAIRS = [["nomLeu3", "ponAbe2", "hg38"]]
-chr_names = ['example', 'example2', 'example3']
+chr_names = ['example', 'example2', 'example3','chrY']
 variant_call_pairs(PAIRS,chr_names)
 
     # env = Environment()
