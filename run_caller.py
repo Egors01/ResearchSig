@@ -1,6 +1,6 @@
 from core_scripts.variantcaller import variant_call_pairs
 
-
+#run with variant_cal_pairs -> to produce variants with pair-defined polarization
 PAIRS = [["nomLeu3", "ponAbe2", "hg38"]]
 chr_names = ['example', 'example2', 'example3','chrY']
 variant_call_pairs(PAIRS,chr_names)
