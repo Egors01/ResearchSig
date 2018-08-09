@@ -10,6 +10,7 @@ from tools.find_refstartpos import get_ref_startpos
 from tools.list_names import get_names
 import constants
 
+#wrapper to extract SNP's     
 def variant_call_pairs(pairs, chr_to_select):
     mainlog = Logger(reset=True)
     chr_names = chr_to_select
