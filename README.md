@@ -1,2 +1,2 @@
 # ResearchSig
-Python scripts for research
+Python scripts Skoltech research proj
