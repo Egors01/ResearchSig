@@ -10,6 +10,7 @@ from tools.find_refstartpos import get_ref_startpos
 from tools.names_generator import create_vcf_name_from_pair_and_ref
 from constants import FASTA_CHRS_PATH
 
+#wrapper to extract SNP's     
 def variant_call_pairs(pairs, chr_to_select):
     mainlog = Logger(reset=True)
     chr_names = chr_to_select
