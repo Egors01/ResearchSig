@@ -3,6 +3,31 @@ import re
 import pandas as pd
 from tools.set_env import Environment
 from tools.logger import Logger
+from constants import VARIANT_PATH_VCF,OUTPUT_FILT_VCF_NAMES_PATH,OUTPUT_VCF_NAMES_PATH
+
+def create_vcf_name_from_pair_and_ref(sp_name,sp_pair,refname,filt=False):
+    if not filt:
+        return os.path.join(VARIANT_PATH_VCF, sp_name + '_VS_' + sp_pair + '.r_' + refname[:4] + '.vcf')
+    else:
+        return os.path.join(VARIANT_PATH_VCF, sp_name + '_VS_' + sp_pair + '.r_' + refname[:4] + '.filt.vcf')
+
+def create_output_file_names(PAIRS_AND_REF):
+    unfilt=open(OUTPUT_VCF_NAMES_PATH,'a')
+    filt=open(OUTPUT_FILT_VCF_NAMES_PATH,'a')
+    for pair_and_ref in PAIRS_AND_REF:
+        for sp,sp_pair in zip([0,1],[1,0]):
+            vcf_name = create_vcf_name_from_pair_and_ref(sp_name=pair_and_ref[sp],
+                                                              sp_pair=pair_and_ref[sp_pair],
+                                                              refname=pair_and_ref[2])
+            vcf_filt_name=create_vcf_name_from_pair_and_ref(sp_name=pair_and_ref[sp],
+                                                              sp_pair=pair_and_ref[sp_pair],
+                                                              refname=pair_and_ref[2],filt=True)
+            unfilt.write(vcf_name+'\n')
+            filt.write(vcf_filt_name+'\n')
+
+    filt.close()
+    unfilt.close()
+    return
 
 def get_names_from_maf(chrname):
     maf_path=os.path.join(Environment().raw_maf_path,chrname+'.maf')

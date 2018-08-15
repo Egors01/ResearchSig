@@ -1,7 +1,8 @@
 import os
 import re
 import pandas as pd
-from tools.set_env import Environment
+
+from constants import REF_STARTPOSPATH
 
 def load_ref_startpos():
     startpos_dict={}
@@ -19,11 +20,11 @@ def load_ref_startpos():
                 startpos_dict[chrname]=int(re.findall(r'\w+', line)[3])
                 break
         inp.close()
-    startpos_df =pd.DataFrame(startpos_dict,index=['pos'])
-    startpos_df.to_csv(Environment().get_ref_startpospath(), sep='\t', index=False)
+    startpos_df = pd.DataFrame(startpos_dict,index=['pos'])
+    startpos_df.to_csv(REF_STARTPOSPATH, sep='\t', index=False)
     return startpos_df
 
 def get_ref_startpos(chrname):
-    startpos_df = pd.read_csv(Environment().get_ref_startpospath(),sep='\t')
+    startpos_df = pd.read_csv(REF_STARTPOSPATH,sep='\t')
     startpos = startpos_df[chrname].values[0]
     return startpos

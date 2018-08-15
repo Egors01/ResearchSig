@@ -1,12 +1,13 @@
 from constants import OS_TYPE,PRIMARY_PATH
 import os
-
+from constants import OUTPUT_FILT_VCF_NAMES_PATH,OUTPUT_VCF_NAMES_PATH
 
 class Environment(object):
     def __init__(self,):
         if OS_TYPE=='LINUX':
             self.primary_path = PRIMARY_PATH
             self.variant_path = os.path.join(self.primary_path,'data','variants')
+            self.variant_path_vcf = os.path.join(self.variant_path, 'vcf_variants')
             self.raw_maf_path = os.path.join(self.primary_path,'data','maf_data')
             self.fasta_chrs_path = os.path.join(self.primary_path,'data', 'chr_raw_fasta_data')
             self.log_path = os.path.join(self.primary_path,'logs')
@@ -17,6 +18,8 @@ class Environment(object):
                     os.makedirs(path)
             self.ref_startpospath = os.path.join(self.primary_path,'resourses','start_positions.csv')
             self.species_names_path = os.path.join(self.primary_path,'resourses','species_names.csv')
+            #self.unfilt = open(OUTPUT_VCF_NAMES_PATH, 'w')
+            #self.filt = open(OUTPUT_FILT_VCF_NAMES_PATH, 'w')
     def get_primary_path(self):
         return self.primary_path
 

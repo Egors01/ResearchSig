@@ -7,8 +7,8 @@ import shutil
 from tools.set_env import Environment
 from tools.logger import Logger
 from tools.find_refstartpos import get_ref_startpos
-from tools.list_names import get_names
-import constants
+from tools.names_generator import create_vcf_name_from_pair_and_ref
+from constants import FASTA_CHRS_PATH
 
 def variant_call_pairs(pairs, chr_to_select):
     mainlog = Logger(reset=True)
@@ -20,14 +20,14 @@ def variant_call_pairs(pairs, chr_to_select):
         for chrname in chr_names:
             mainlog.tick(timer_name='chr_timer')
             mainlog.message(msg='Start chr ' + chrname )
-            chrv1, chrv2 = chr_variant_call(chrname, pair[1], pair[2], pair[0])
+            chrv1, chrv2 = chr_variant_call(chrname, sp_name_1=pair[0], sp_name_2=pair[1], ref_name=pair[2])
             mainlog.message(msg="finished chr "+chrname, print_time=True, timer_name='chr_timer')
             v_df1 = pd.concat([chrv1, v_df1], ignore_index=True)
             v_df2 = pd.concat([chrv2, v_df2], ignore_index=True)
         mainlog.message(source_name='variant_call_pairs', msg='Ended pair ' + str(pair), print_time=True,
                         timer_name='pair_timer')
-        df_to_vcf(v_df1, pair[1], pair[2], pair[0])
-        df_to_vcf(v_df2, pair[2], pair[1], pair[0])
+        df_to_vcf(v_df1, sp_name=pair[0], sp_pair=pair[1], refname=pair[2])
+        df_to_vcf(v_df2, sp_name=pair[1], sp_pair=pair[0], refname=pair[2])
     mainlog.print_end()
 
 def get_context(f, fileindex):
@@ -42,7 +42,7 @@ def get_context(f, fileindex):
 
 
 def chr_variant_call(chr_name, sp_name_1="", sp_name_2="", ref_name=''):
-    outputpath = os.path.join(Environment().fasta_chrs_path, chr_name)
+    outputpath = os.path.join(FASTA_CHRS_PATH, chr_name)
     variant_call_logger = Logger(source_name='variant_call')
     #                             msg='variants counting for ' + chr_name + ' ' + sp_name_1 + ' ' + sp_name_2)
     sp_names = [ref_name, sp_name_1, sp_name_2]
@@ -51,6 +51,7 @@ def chr_variant_call(chr_name, sp_name_1="", sp_name_2="", ref_name=''):
         f[i].readline()
     docpos = 0
     alt_name = ''
+    context=''
     [ALT, REF, SP1, SP2, REFPOS, INFO, CHR, CONTEXT] = [[], [], [], [], [], [], [], []]
     refpos = get_ref_startpos(chr_name)
     # print('IN CALL2')
@@ -127,9 +128,9 @@ def df_to_vcf(result, sp_name, sp_pair, refname):
     final_pair_path = os.path.join(Environment().variant_path,'raw_variants')
     if not os.path.exists(final_pair_path):
         os.makedirs(final_pair_path)
-    filename = os.path.join(final_pair_path, sp_name + '_VS_' + sp_pair + '_r.' + refname[:4] + '.vcf')
+    filename = create_vcf_name_from_pair_and_ref(sp_name=sp_name,sp_pair=sp_pair,refname=refname)
     header = '##fileformat=VCFv4.1 \n'
-    header += ('##contig=<ID=' + filename + ', length=111111,assembly=hg38> \n##reference=' + refname + '\n')
+    header += ('##contig=<ID=' + filename + ', length=0,assembly=hg38> \n##reference=' + refname + '\n')
     header += '#CHROM POS ID REF ALT QUAL FILTER INFO\n'
     f = open(filename, 'w')
     f.write(header)
@@ -152,5 +153,6 @@ def df_to_vcf(result, sp_name, sp_pair, refname):
     f.close()
     with open(filename, 'a') as f:
         result.to_csv(f, header=False, sep='\t', index=False,mode='a')
-    Logger(source_name='to_vcf', msg='finished vcf')
+    Logger(source_name='to_vcf', msg='finished vcf creation')
+
     return  # result

@@ -1,13 +1,18 @@
 import time
 import os
+
+from constants import LOG_PATH
+from constants import RUN_ID
 from tools.set_env import Environment
 
 
 class Logger:
-    def __init__(self, source_name='default', filename='run_log', msg='', reset=False):
-        self.log_path = Environment().log_path
+    def __init__(self, source_name='main_thread', filename='run_log', msg='', reset=False):
+        self.log_path = LOG_PATH
         if not os.path.exists(self.log_path):
             os.makedirs(self.log_path)
+        filename+='_'+str(RUN_ID)
+        source_name+=' run_id '+str(RUN_ID)
         self.log_path = os.path.join(self.log_path, filename + '.log')
         self.time_start = time.time()
         self.logger_source_name = source_name

@@ -13,7 +13,6 @@ def context_count():
     contexts=[ c1+'.'+c2 for c1 in ['A','T','G','C']  for c2 in ['A','T','G','C']]
     context_abundance=pd.DataFrame()
     context_abundance['Context']=contexts
-
     log=open(logfile,'w')
     log.write(str(sp_names)+'\n')
     log.close()
