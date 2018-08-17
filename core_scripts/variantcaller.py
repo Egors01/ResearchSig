@@ -14,22 +14,26 @@ from constants import FASTA_CHRS_PATH
 def variant_call_pairs(pairs, chr_to_select):
     mainlog = Logger(reset=True)
     chr_names = chr_to_select
+    processed_files=[]
     for pair in pairs:
         mainlog.tick(timer_name='pair_timer')
         mainlog.message(msg='Started pair ' + str(pair))
         v_df1, v_df2 = [pd.DataFrame(), pd.DataFrame()]
         for chrname in chr_names:
             mainlog.tick(timer_name='chr_timer')
-            mainlog.message(msg='Start chr ' + chrname )
+            mainlog.message(msg='Started chr ' + chrname )
             chrv1, chrv2 = chr_variant_call(chrname, sp_name_1=pair[0], sp_name_2=pair[1], ref_name=pair[2])
             mainlog.message(msg="finished chr "+chrname, print_time=True, timer_name='chr_timer')
             v_df1 = pd.concat([chrv1, v_df1], ignore_index=True)
             v_df2 = pd.concat([chrv2, v_df2], ignore_index=True)
         mainlog.message(source_name='variant_call_pairs', msg='Ended pair ' + str(pair), print_time=True,
                         timer_name='pair_timer')
-        df_to_vcf(v_df1, sp_name=pair[0], sp_pair=pair[1], refname=pair[2])
-        df_to_vcf(v_df2, sp_name=pair[1], sp_pair=pair[0], refname=pair[2])
+        sp1_filename = df_to_vcf(v_df1, sp_name=pair[0], sp_pair=pair[1], refname=pair[2])
+        sp2_filename = df_to_vcf(v_df2, sp_name=pair[1], sp_pair=pair[0], refname=pair[2])
+        processed_files.append(sp1_filename)
+        processed_files.append(sp2_filename)
     mainlog.print_end()
+    return processed_files
 
 def get_context(f, fileindex):
     f[fileindex].seek(-2, 1)
@@ -137,6 +141,7 @@ def df_to_vcf(result, sp_name, sp_pair, refname):
     f.write(header)
     f.close()
 
+
     del result['Info']
     result["CHROM"] = result['Chr'].replace(r'_\w+', "", inplace=False, regex=True)
     result['Chr'] = result["Chr"] + "_" + result["SUBS"] + "_" + result["Context"]
@@ -150,10 +155,9 @@ def df_to_vcf(result, sp_name, sp_pair, refname):
     HH = []
     for line in f:
         HH.append(line.strip())
-    print(HH)
+    #print(HH)
     f.close()
     with open(filename, 'a') as f:
         result.to_csv(f, header=False, sep='\t', index=False,mode='a')
     Logger(source_name='to_vcf', msg='finished vcf creation')
-
-    return  # result
+    return filename

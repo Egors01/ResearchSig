@@ -1,4 +1,4 @@
-from constants import SPECIES_NAMES,CHR_NAMES
+from constants import SPECIES_NAMES, CHR_NAMES, RESOURSES_PATH
 import os
 import pandas as pd
 import time
@@ -44,4 +44,7 @@ def context_count():
     log=open(logfile,'a')
     log.write('End time \n'+str(time.asctime(time.localtime()))+'\n')
     log.close()
-    context_abundance.to_csv('context_abundance.csv',sep='\t')
+    context_abundance.to_csv('context_abundance.csv',sep='\t',index=False)
+
+def load_context_abundance():
+    return pd.read_csv(os.path.join(RESOURSES_PATH,'context_abundance.csv'),sep='\t')
