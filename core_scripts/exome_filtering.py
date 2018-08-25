@@ -28,9 +28,15 @@ def filtering_vcf_files(processed_files):
         logger.message('filtering pair {}'.format(os.path.basename(filename)))
         filt_vcf_filename = make_vcf_filt_name(sp_vcf_old_name=filename)
         filtered_filenames_list.append(filt_vcf_filename)
-        command = "bedtools intersect -wao -v -a " + \
-                  filename + " -b  " + EXOME_FILE + \
-                  " > " + filt_vcf_filename
-        subprocess.call(command,shell=True)
+        try:
+
+            command = "bedtools intersect -v -wao -a " + \
+                      filename + " -b  " + EXOME_FILE + \
+                      " > " + filt_vcf_filename
+            subprocess.call(command,shell=True)
+        except:
+            logger.message('Error in filtering ')
+            raise
+
     logger.print_end()
     return filtered_filenames_list

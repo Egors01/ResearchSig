@@ -39,17 +39,13 @@ def old():
     result.to_csv('96-Matrix-recent.csv', sep='\t',index=False)
 
 def gen96_matrix_from_filtered_vcf(filt_vcf_names_list):
-    logger=Logger(source_name='table_generator',msg='Started table creation')
-    logger.message(msg='Accepted args '+str(filt_vcf_names_list))
-    print('sp names in 96m',filt_vcf_names_list)
-#    log.write('name example '+sys.argv[2].split(".filt.vcf")[0].split("/")[1]+ ' \n')
-#    log.close()
+    logger=Logger(source_name='table_generator',msg='Launched table creation')
     for filename in filt_vcf_names_list:
+        logger.message(msg='started for {}'.format(os.path.basename(filename)))
         vcf_data=pd.read_csv(filename, sep='\t', skiprows=0,header=None,names=["CHROM","POS", "ID", "REF", "ALT","QUAL", "FILTER","INFO"])
         vcf_data['Sample']=vcf_data['ID'].str.split('_',expand=True)[1]
         vcf_data['Context']=vcf_data['ID'].str.split('_',expand=True)[3]
         vcf_data['SUBS']=vcf_data['ID'].str.split('_',expand=True)[2]
-        print('For filename ',filename)
         #name = filename.split(".filt.vcf")[0].split("/")[1]
         name = filename.split("/")[-1].split('.filt.vcf')[0]
         print(name)
