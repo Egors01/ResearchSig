@@ -1,12 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" promptOnRemoteOverwrite="CHECK_CONTENT" serverName="CoBrain-server" notifyRemoteChanges="true">
+  <component name="PublishConfigData" promptOnRemoteOverwrite="CHECK_CONTENT" serverName="CoBrain-server" traceLevel="DETAILS" notifyRemoteChanges="true">
     <serverData>
       <paths name="CoBrain-server">
         <serverdata>
           <mappings>
             <mapping deploy="/find_sig_project/project_path" local="$PROJECT_DIR$" web="/" />
           </mappings>
+          <excludedPaths>
+            <excludedPath local="true" path="$PROJECT_DIR$/data/chr_raw_fasta_data" />
+            <excludedPath local="true" path="$PROJECT_DIR$/data/variants" />
+            <excludedPath local="true" path="$PROJECT_DIR$/logs" />
+          </excludedPaths>
         </serverdata>
       </paths>
       <paths name="Copy of project-level server 'CoBrain-server'">
