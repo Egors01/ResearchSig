@@ -17,12 +17,12 @@ def old():
     log.close()
 
     for filename in sys.argv[1:]:
-        print('here')
+        #print('here')
         vcf_data=pd.read_csv(filename, sep='\t', skiprows=4,header=None,names=["CHROM","POS", "ID", "REF", "ALT","QUAL", "FILTER","INFO"])
         vcf_data['Sample']=vcf_data['ID'].str.split('_',expand=True)[1]
         vcf_data['Context']=vcf_data['ID'].str.split('_',expand=True)[3]
         vcf_data['SUBS']=vcf_data['ID'].str.split('_',expand=True)[2]
-        print('For filename ',filename)
+        #print('For filename ',filename)
         name=filename.split(".filt.vcf")[0].split("/")[1]
         df=vcf_data.groupby(['SUBS','Context']).size().reset_index(name=name)
         df.sort_values(by=['SUBS'],inplace=True)
@@ -53,7 +53,7 @@ def gen96_matrix_from_filtered_vcf(filt_vcf_names_list):
         #name = filename.split(".filt.vcf")[0].split("/")[1]
         name = filename.split("/")[-1].split('.filt.vcf')[0]
         print(name)
-        df=vcf_data.groupby(['SUBS','Context']).size().reset_index(name=name)
+        df = vcf_data.groupby(['SUBS','Context']).size().reset_index(name=name)
         df.sort_values(by=['SUBS'],inplace=True)
         result[name]=df[name]
         logger.message(msg='Done for '+name+ ' \n')
@@ -63,7 +63,7 @@ def gen96_matrix_from_filtered_vcf(filt_vcf_names_list):
     df['SUBS'] = df.apply(lambda row: row.Context[0]+'['+row.SUBS +']'+row.Context[2] ,axis=1)
     result['SUBS']=df['SUBS']
     result.to_csv(MATRIX_NAME, sep='\t',index=False)
-
+    return MATRIX_NAME
 
 def gen96_matrix_from_vcf_script():
     parser = argparse.ArgumentParser()

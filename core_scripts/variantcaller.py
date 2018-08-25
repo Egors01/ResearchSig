@@ -10,30 +10,39 @@ from tools.find_refstartpos import get_ref_startpos
 from tools.names_generator import create_vcf_name_from_pair_and_ref
 from constants import FASTA_CHRS_PATH
 
-#wrapper to extract SNP's     
-def variant_call_pairs(pairs, chr_to_select):
-    mainlog = Logger(reset=True)
+
+# wrapper to extract SNP's
+def variant_call_pairs(pairs_list, chr_to_select):
+    caller_log = Logger(reset=True, source_name='variant_call_pairs')
     chr_names = chr_to_select
-    processed_files=[]
-    for pair in pairs:
-        mainlog.tick(timer_name='pair_timer')
-        mainlog.message(msg='Started pair ' + str(pair))
+    processed_files = []
+    for pair in pairs_list:
+        caller_log.tick(timer_name='pair_timer')
+        caller_log.message(msg='Started pair ' + str(pair.string()))
         v_df1, v_df2 = [pd.DataFrame(), pd.DataFrame()]
         for chrname in chr_names:
-            mainlog.tick(timer_name='chr_timer')
-            mainlog.message(msg='Started chr ' + chrname )
-            chrv1, chrv2 = chr_variant_call(chrname, sp_name_1=pair[0], sp_name_2=pair[1], ref_name=pair[2])
-            mainlog.message(msg="finished chr "+chrname, print_time=True, timer_name='chr_timer')
+            caller_log.tick(timer_name='chr_timer')
+            caller_log.message(msg='Started chr ' + chrname)
+            chrv1, chrv2 = chr_variant_call(chrname, sp_name_1=pair.species_1,
+                                            sp_name_2=pair.species_2,
+                                            ref_name=pair.reference)
+            caller_log.message(msg="finished chr " + chrname, print_time=True,
+                               timer_name='chr_timer')
             v_df1 = pd.concat([chrv1, v_df1], ignore_index=True)
             v_df2 = pd.concat([chrv2, v_df2], ignore_index=True)
-        mainlog.message(source_name='variant_call_pairs', msg='Ended pair ' + str(pair), print_time=True,
-                        timer_name='pair_timer')
-        sp1_filename = df_to_vcf(v_df1, sp_name=pair[0], sp_pair=pair[1], refname=pair[2])
-        sp2_filename = df_to_vcf(v_df2, sp_name=pair[1], sp_pair=pair[0], refname=pair[2])
+        caller_log.message(msg='Ended pair ' + str(pair.string()), print_time=True,
+                           timer_name='pair_timer')
+        sp1_filename = df_to_vcf(v_df1, sp_name=pair.species_1,
+                                 sp_pair=pair.species_2,
+                                 refname=pair.reference)
+        sp2_filename = df_to_vcf(v_df2, sp_name=pair.species_2,
+                                 sp_pair=pair.species_1,
+                                 refname=pair.reference)
         processed_files.append(sp1_filename)
         processed_files.append(sp2_filename)
-    mainlog.print_end()
+    caller_log.print_end()
     return processed_files
+
 
 def get_context(f, fileindex):
     f[fileindex].seek(-2, 1)
@@ -51,13 +60,15 @@ def chr_variant_call(chr_name, sp_name_1="", sp_name_2="", ref_name=''):
     variant_call_logger = Logger(source_name='variant_call')
     #                             msg='variants counting for ' + chr_name + ' ' + sp_name_1 + ' ' + sp_name_2)
     sp_names = [ref_name, sp_name_1, sp_name_2]
-    f = [open(os.path.join(outputpath, name + ".fasta"), 'rb') for name in sp_names]
+    f = [open(os.path.join(outputpath, name + ".fasta"), 'rb') for name in
+         sp_names]
     for i in range(0, 3):
         f[i].readline()
     docpos = 0
     alt_name = ''
-    context=''
-    [ALT, REF, SP1, SP2, REFPOS, INFO, CHR, CONTEXT] = [[], [], [], [], [], [], [], []]
+    context = ''
+    [ALT, REF, SP1, SP2, REFPOS, INFO, CHR, CONTEXT] = [[], [], [], [], [], [],
+                                                        [], []]
     refpos = get_ref_startpos(chr_name)
     # print('IN CALL2')
     while True:
@@ -73,7 +84,8 @@ def chr_variant_call(chr_name, sp_name_1="", sp_name_2="", ref_name=''):
         docpos += 1
         if sp_1 != sp_2:
             if not (sp_1 != ref and sp_2 != ref):
-                if bool(re.match(r'[ATGCatgc]', sp_1)) and bool(re.match(r'[ATGCatgc]', sp_2)):
+                if bool(re.match(r'[ATGCatgc]', sp_1)) and bool(
+                        re.match(r'[ATGCatgc]', sp_2)):
                     # if (sp_1 in constants.ALLOWED_NUCLEOTIDE_SYMBOLS) and (sp_2 in constants.ALLOWED_NUCLEOTIDE_SYMBOLS):
                     # if ('-' not in sp_1+sp_2) and ('n' not in sp_1+sp_2) and ('N' not in sp_1+sp_2) and ('*' not in sp_1+sp_2):
                     if sp_1 == ref:
@@ -86,11 +98,12 @@ def chr_variant_call(chr_name, sp_name_1="", sp_name_2="", ref_name=''):
                         alt_name = sp_names[1]
                         context = get_context(f, 1)
                     else:
-                        variant_call_logger.message(msg='Error when comparing ')
+                        variant_call_logger.message(
+                            msg='Error when comparing ')
                     if bool(re.match(r'[ATGCatgc].[ATGCatgc]', context)):
                         # if ('-' not in context and 'N' not in context and  'n' not in context and '*' not in context):
                         # print("app sector")
-                        info = "dp " + str(docpos)
+                        info = str(docpos)
                         CONTEXT.append(context.upper())
                         CHR.append(chr_name + '_' + alt_name)
                         ALT.append(alt)
@@ -104,60 +117,71 @@ def chr_variant_call(chr_name, sp_name_1="", sp_name_2="", ref_name=''):
     for index, sbs in enumerate(SUBS):
         if sbs == 'A>T':
             SUBS[index] = 'T>A'
-            INFO[index] += ('CPL A>T')
+            INFO[index] += (' CPL A>T')
         if sbs == 'G>C':
             SUBS[index] = 'C>G'
-            INFO[index] += ('CPL G>C')
+            INFO[index] += (' CPL G>C')
         if sbs == 'G>A':
             SUBS[index] = 'C>T'
-            INFO[index] += ('CPL G>A')
+            INFO[index] += (' CPL G>A')
         if sbs == 'A>G':
             SUBS[index] = 'T>C'
-            INFO[index] += ('CPL A>G')
+            INFO[index] += (' CPL A>G')
         if sbs == 'A>C':
             SUBS[index] = 'T>G'
-            INFO[index] += ('CPL A>C')
+            INFO[index] += (' CPL A>C')
         if sbs == 'G>T':
             SUBS[index] = 'C>A'
-            INFO[index] += ('CPL G>T')
+            INFO[index] += (' CPL G>T')
 
-    dictdata = {'Chr': CHR, 'SUBS': SUBS, 'Alt': ALT, 'Ref': REF, 'Refpos': REFPOS, 'Context': CONTEXT, 'Info': INFO}
+    dictdata = {'Chr': CHR, 'SUBS': SUBS, 'Alt': ALT, 'Ref': REF,
+                'Refpos': REFPOS, 'Context': CONTEXT, 'Info': INFO}
     chrdata = pd.DataFrame(dictdata, columns=dictdata.keys())
-    data_sp_1 = pd.DataFrame(chrdata.loc[chrdata['Chr'] == (chr_name + '_' + sp_name_1)])
-    data_sp_2 = pd.DataFrame(chrdata.loc[chrdata['Chr'] == (chr_name + '_' + sp_name_2)])
+    data_sp_1 = pd.DataFrame(
+        chrdata.loc[chrdata['Chr'] == (chr_name + '_' + sp_name_1)])
+    data_sp_2 = pd.DataFrame(
+        chrdata.loc[chrdata['Chr'] == (chr_name + '_' + sp_name_2)])
 
     return data_sp_1, data_sp_2
 
 
 def df_to_vcf(result, sp_name, sp_pair, refname):
-    final_pair_path = os.path.join(Environment().variant_path,'raw_variants')
+    final_pair_path = os.path.join(Environment().variant_path, 'raw_variants')
     if not os.path.exists(final_pair_path):
         os.makedirs(final_pair_path)
-    filename = create_vcf_name_from_pair_and_ref(sp_name=sp_name,sp_pair=sp_pair,refname=refname)
+    filename = create_vcf_name_from_pair_and_ref(sp_name=sp_name,
+                                                 sp_pair=sp_pair,
+                                                 refname=refname)
     header = '##fileformat=VCFv4.1 \n'
-    header += ('##contig=<ID=' + filename + ', length=0,assembly=hg38> \n##reference=' + refname + '\n')
+    header += (
+            '##contig=<ID=' + filename + ', length=0,assembly=hg38> \n##reference=' + refname + '\n')
     header += '#CHROM POS ID REF ALT QUAL FILTER INFO\n'
     f = open(filename, 'w')
     f.write(header)
     f.close()
 
-
-    del result['Info']
-    result["CHROM"] = result['Chr'].replace(r'_\w+', "", inplace=False, regex=True)
-    result['Chr'] = result["Chr"] + "_" + result["SUBS"] + "_" + result["Context"]
+    # del result['Info']
+    result["CHROM"] = result['Chr'].replace(r'_\w+', "", inplace=False,
+                                            regex=True)
+    result['Chr'] = result["Chr"] + "_" + result["SUBS"] + "_" + result[
+        "Context"]
     result['QUAL'] = '.'
     result['FILTER'] = '.'
-    result['INFO'] = '.'
+    # result['INFO'] = '.'
     del result['Context']
-    result.rename(index=str, columns={"Chr": "ID", "Refpos": "POS", "Ref": "REF", "Alt": "ALT"}, inplace=True)
-    result = result[["CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO"]]
-    f=open(filename,'r')
+    result.rename(index=str,
+                  columns={"Chr": "ID", "Refpos": "POS", "Ref": "REF",
+                           "Alt": "ALT", "Info": 'INFO'}, inplace=True)
+    result = result[
+        ["CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO"]]
+    f = open(filename, 'r')
     HH = []
     for line in f:
         HH.append(line.strip())
-    #print(HH)
+    # print(HH)
     f.close()
     with open(filename, 'a') as f:
-        result.to_csv(f, header=False, sep='\t', index=False,mode='a')
-    Logger(source_name='to_vcf', msg='finished vcf creation')
+        result.to_csv(f, header=False, sep='\t', index=False, mode='a')
+    Logger(source_name='to_vcf_convertion',
+           msg='finished vcf for {}'.format(sp_name))
     return filename

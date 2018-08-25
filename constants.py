@@ -1,7 +1,7 @@
 import os
 
+RUN_ID='999'
 OS_TYPE = 'LINUX'
-RUN_ID = '0'
 CHR_NAMES = ['chr1', 'chr2', 'chr3', 'chr4',
              'chr5', 'chr6', 'chr7', 'chr8',
              'chr9', 'chr10', 'chr11', 'chr12',
@@ -24,6 +24,7 @@ LOG_PATH = os.path.join(PRIMARY_PATH, 'logs')
 RESOURSES_PATH = os.path.join(PRIMARY_PATH, 'resourses')
 MATRICES_PATH = os.path.join(VARIANT_PATH, 'matrix_tables')
 EXOME_PATH=os.path.join(PRIMARY_PATH, 'data', 'exome_beds')
+CORE_SCRIPTS_PATH = os.path.join(PRIMARY_PATH,'core_scripts')
 for path in [
     VARIANT_PATH,
     VCF_VARIANT_PATH,

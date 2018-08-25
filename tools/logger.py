@@ -3,8 +3,6 @@ import os
 
 from constants import LOG_PATH
 from constants import RUN_ID
-from tools.set_env import Environment
-
 
 class Logger:
     def __init__(self, source_name='main_thread', filename='run_log', msg='', reset=False):
@@ -46,7 +44,7 @@ class Logger:
 
     def print_end(self):
         f_log = open(self.log_path, 'a')
-        f_log.write(self.logger_source_name + ' log: all parts ended at ' + str(time.asctime(time.localtime())) + '\n')
+        f_log.write(self.logger_source_name + ' log: ended at ' + str(time.asctime(time.localtime())) + '\n')
         diff = time.time() - self.time_start
         min = round(diff // 60, 2)
         sec = round(diff % 60, 2)
