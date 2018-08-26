@@ -1,16 +1,17 @@
-import time
 import os
+import time
 
-from constants import LOG_PATH
-from constants import RUN_ID
+import constants
+
 
 class Logger:
-    def __init__(self, source_name='main_thread', filename='run_log', msg='', reset=False):
-        self.log_path = LOG_PATH
+    def __init__(self,run_id, source_name='main_thread', filename='run_log', msg='',
+                 reset=False,):
+        self.log_path = constants.LOG_PATH
         if not os.path.exists(self.log_path):
             os.makedirs(self.log_path)
-        filename+='_'+str(RUN_ID)
-        source_name+=' run_id '+str(RUN_ID)
+        filename += '_' + str(run_id)
+        source_name += ' run_id ' + str(run_id)
         self.log_path = os.path.join(self.log_path, filename + '.log')
         self.time_start = time.time()
         self.logger_source_name = source_name
@@ -18,7 +19,8 @@ class Logger:
         self.timers = Timer()
         if not os.path.isfile(self.log_path) or reset:
             f_log = open(self.log_path, 'w')
-            f_log.write(self.logger_source_name + ' log: Started at ' + str(time.asctime(time.localtime())) + '\n')
+            f_log.write(self.logger_source_name + ' log: Started at ' + str(
+                time.asctime(time.localtime())) + '\n')
 
         elif msg != '':
             f_log = open(self.log_path, 'a')
@@ -39,17 +41,22 @@ class Logger:
             diff = time.time() - self.timers.get_timer_by_name(timer_name)
             min = round(diff // 60, 2)
             sec = round(diff % 60, 2)
-            f_log.write(source_name + ' log: passed time: ' + str(min) + ' min ' + str(sec) + ' s\n')
+            f_log.write(
+                source_name + ' log: passed time: ' + str(min) + ' min ' + str(
+                    sec) + ' s\n')
         f_log.close()
 
     def print_end(self):
         f_log = open(self.log_path, 'a')
-        f_log.write(self.logger_source_name + ' log: ended at ' + str(time.asctime(time.localtime())) + '\n')
+        f_log.write(self.logger_source_name + ' log: ended at ' + str(
+            time.asctime(time.localtime())) + '\n')
         diff = time.time() - self.time_start
         min = round(diff // 60, 2)
         sec = round(diff % 60, 2)
 
-        f_log.write(self.logger_source_name+ ' log: time passed from start ' + str(min) + ' min ' + str(sec) + ' s\n')
+        f_log.write(
+            self.logger_source_name + ' log: time passed from start ' + str(
+                min) + ' min ' + str(sec) + ' s\n')
         f_log.close()
 
 

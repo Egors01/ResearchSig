@@ -1,28 +1,14 @@
-# #!/usr/bin/bash
-# from constants import EXOME_FILE
-# from tools.logger import Logger
-# from tools.names_generator import make_vcf_filt_name
-#
-# echo Launched terminal part
-# for file in ../data/variants/vcf_variants/*.vcf
-# do
-#     OUT=../data/variants/filt_variants/`basename -s .vcf $file`.filt.vcf
-#     echo file=$file
-# 	echo out=$OUT
-# 	bedtools intersect -wao -v -a $file  -b  ../data/exome_beds/exomeD.bed >  $OUT
-#
-# done
 import os
 import subprocess
 
-from constants import EXOME_FILE
+import constants
 from tools.logger import Logger
+
 from tools.names_generator import make_vcf_filt_name
 
-
-def filtering_vcf_files(processed_files):
-    logger = Logger(source_name='secondary_proc',
-                    msg='launched filtering part')
+def filtering_vcf_files(processed_files,run_id=None):
+    logger = Logger(source_name='filtering ',
+                    msg='launched filtering part',run_id=run_id)
     filtered_filenames_list = []
     for filename in processed_files:
         logger.message('filtering pair {}'.format(os.path.basename(filename)))
@@ -31,12 +17,12 @@ def filtering_vcf_files(processed_files):
         try:
 
             command = "bedtools intersect -v -wao -a " + \
-                      filename + " -b  " + EXOME_FILE + \
+                      filename + " -b  " + constants.EXOME_FILE + \
                       " > " + filt_vcf_filename
             subprocess.call(command,shell=True)
         except:
             logger.message('Error in filtering ')
-            raise
+            raise Exception('Error in filetering ')
 
     logger.print_end()
     return filtered_filenames_list

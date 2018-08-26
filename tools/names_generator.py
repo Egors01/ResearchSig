@@ -69,12 +69,12 @@ def get_sepecies_names():
 
 get_sepecies_names()
 
-def get_names(chrname='chrY'):
+def get_names(chrname='chrY',run_id='999'):
     try:
         names_df = pd.read_csv(SPECIES_NAMES_PATH, sep='\t')
         sp_names = names_df[chrname].dropna().values
     except:
-        log_def = Logger(msg='cannot load sp_names from file. trying from maf...')
+        log_def = Logger(msg='cannot load sp_names from file. trying from maf...',run_id=run_id)
         try:
             sp_names = get_names_from_maf(chrname)
             log_def.message(msg='loaded from maf ')

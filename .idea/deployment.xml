@@ -11,6 +11,7 @@
             <excludedPath local="true" path="$PROJECT_DIR$/data/chr_raw_fasta_data" />
             <excludedPath local="true" path="$PROJECT_DIR$/data/variants" />
             <excludedPath local="true" path="$PROJECT_DIR$/logs" />
+            <excludedPath local="true" path="$PROJECT_DIR$/resourses/pybedtools" />
           </excludedPaths>
         </serverdata>
       </paths>

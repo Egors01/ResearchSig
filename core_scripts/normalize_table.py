@@ -1,13 +1,13 @@
-from constants import MATRIX_NAME
+
 from tools.logger import Logger
 from tools.names_generator import get_sepecies_names
 from tools.context_count import load_context_abundance
 import pandas as pd
+import constants
 
-
-def normilize_frequencies(path_to_96_matrix=MATRIX_NAME):
+def normilize_frequencies(path_to_96_matrix,run_id='999'):
     logger = Logger(source_name='matrix_normilize',
-                    msg='started matrix normilization')
+                    msg='started matrix normilization',run_id=run_id)
     # names = get_sepecies_names()
     sp_names = set()
     context_abundance = load_context_abundance()
@@ -35,7 +35,7 @@ def normilize_frequencies(path_to_96_matrix=MATRIX_NAME):
             mult = \
             context_abundance.loc[context_abundance["Context"] == context][
                 name].item()
-            print(" sp_name {} context {} mult {}".format(name,context,mult))
+            #print(" sp_name {} context {} mult {}".format(name,context,mult))
             m96.update(m96.loc[m96["SUBS"].str.contains(
                 r'' + context[0] + '.....' + context[2]),
                                m96.filter(regex=r'' + name + '_.*',

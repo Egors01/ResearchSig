@@ -4,7 +4,7 @@ from tools.input_data import InputParameters
 
 
 input_data = InputParameters()
-input_data.add_pair(first="nomLeu3", second="ponAbe2", ref="hg38", run_id=999)
+input_data.add_pair(first="nomLeu3", second="ponAbe2", ref="hg38", run_id=4)
 
 
 input_data.add_pair(first="panPan1", second=   "hg38", ref="ponAbe2", run_id=0)
@@ -21,6 +21,8 @@ input_data.add_pair(first="gorGor3", second="ponAbe2", ref="nomLeu3", run_id=2)
 input_data.add_pair(first="nomLeu3", second="ponAbe2", ref="rheMac3", run_id=3)
 input_data.add_pair(first="nomLeu3", second="ponAbe2", ref="papAnu2", run_id=3)
 input_data.add_pair(first="nomLeu3", second="ponAbe2", ref="nasLar1", run_id=3)
+
+
 
 # PAIRS = [["ponAbe2", "panPan1", "panTro4"],
 #          ["ponAbe2", "panPan1", "hg38"],
