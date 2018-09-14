@@ -12,22 +12,30 @@ def create_vcf_name_from_pair_and_ref(sp_name, sp_pair, refname, filt=False):
     if not filt:
         return os.path.join(VCF_VARIANT_PATH, sp_name + '_VS_' + sp_pair + '.r_' + refname[:4] + '.vcf')
 
-def make_vcf_filt_name(sp_vcf_old_name):
-     new_name = os.path.join(FILT_VCF_VARIANT_PATH,
+def make_vcf_filt_names(sp_vcf_old_names_list):
+    res_list = []
+    for sp_vcf_old_name in sp_vcf_old_names_list:
+        new_name = os.path.join(FILT_VCF_VARIANT_PATH,
                 sp_vcf_old_name.split('/')[-1].split('.vcf')[0] + '.filt.vcf')
-     return new_name
-def create_output_file_names(PAIRS_AND_REF):
-    vcf_variants_filenames_list = []
-    filt_vcf_variants_filenames_list = []
-    filt = open(OUTPUT_FILT_VCF_NAMES_PATH, 'a')
-    for pair_and_ref in PAIRS_AND_REF:
-        # TODO change to combination
-        for sp, sp_pair in zip([0, 1], [1, 0]):
-            vcf_name = create_vcf_name_from_pair_and_ref(sp_name=pair_and_ref[sp],
-                                                         sp_pair=pair_and_ref[sp_pair],
-                                                         refname=pair_and_ref[2])
-            vcf_variants_filenames_list.append(vcf_name)
+        res_list.append(new_name)
+    return res_list
 
+def make_vcf_filt_name(sp_vcf_old_name):
+   new_name = os.path.join(FILT_VCF_VARIANT_PATH,
+                sp_vcf_old_name.split('/')[-1].split('.vcf')[0] + '.filt.vcf')
+   return new_name
+
+def create_output_file_names(pairs_list):
+    vcf_variants_filenames_list = []
+    for pair_list_elem in pairs_list:
+        vcf_name = create_vcf_name_from_pair_and_ref(sp_name=pair_list_elem.species_1,
+                                                     sp_pair=pair_list_elem.species_2,
+                                                     refname=pair_list_elem.reference)
+        vcf_variants_filenames_list.append(vcf_name)
+        vcf_name = create_vcf_name_from_pair_and_ref(sp_name=pair_list_elem.species_2,
+                                                     sp_pair=pair_list_elem.species_1,
+                                                     refname=pair_list_elem.reference)
+        vcf_variants_filenames_list.append(vcf_name)
     return vcf_variants_filenames_list
 
 

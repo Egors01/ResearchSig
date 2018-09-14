@@ -12,6 +12,10 @@
             <excludedPath local="true" path="$PROJECT_DIR$/data/variants" />
             <excludedPath local="true" path="$PROJECT_DIR$/logs" />
             <excludedPath local="true" path="$PROJECT_DIR$/resourses/pybedtools" />
+            <excludedPath local="true" path="$PROJECT_DIR$/data/exome_beds" />
+            <excludedPath path="/find_sig_project/project_path/data" />
+            <excludedPath path="/find_sig_project/project_path/core_scripts/exome_filtering.py" />
+            <excludedPath local="true" path="$PROJECT_DIR$/core_scripts/plot_spectra.py" />
           </excludedPaths>
         </serverdata>
       </paths>
