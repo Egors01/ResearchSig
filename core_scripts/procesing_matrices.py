@@ -5,20 +5,25 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from constants import MATRICES_PATH
-from core_scripts.matrix_operations import normalize_96_to_total_sum, \
+from core_scripts.matrix_operations import normalize_matrix_to_type_sum, \
     reduce_192_to_96_common_notation, reduce_192_to_96_kelley_notation, \
-    create_ratio_table, create_heatmap_df_for_species_kelley, \
+    create_ratio_table, create_heatmap_df_for_species, \
     normalize_frequencies_192_context, matrix_to_r_output
 
 
-def plot_heatmaps_from_ratios_list(ratios_table, ratios_to_plot,title=''):
+def plot_heatmaps_from_ratios_list(ratios_table, ratios_to_plot, title='',
+                                   kelley_notation=True):
     heatmaps_to_plot = [
-        create_heatmap_df_for_species_kelley(relations_df=ratios_table,
-                                             column_name=x)
+        create_heatmap_df_for_species(relations_df=ratios_table,
+                                             column_name=x,
+                                      kelley_notation=kelley_notation)
         for x in ratios_to_plot]
 
     fig = plt.figure(figsize=(20, 10))
     fig.subplots_adjust(hspace=0.4, wspace=0.4)
+    plt.title(title, y=1.08,fontsize=20)
+    #plt.title(title, fontsize=20)
+    #plt.text(0.5, 1.08, title)
     for i, heatmap in enumerate(heatmaps_to_plot):
         ax = fig.add_subplot(1, len(heatmaps_to_plot), i + 1)
         # ax.text(0.5, 0.5, str((1, 4, i)), fontsize=18, ha='center')
@@ -26,128 +31,123 @@ def plot_heatmaps_from_ratios_list(ratios_table, ratios_to_plot,title=''):
                     center=1, cmap='RdBu_r', ax=ax)
         fig.subplots_adjust(hspace=0.8)
         ax.set_title(ratios_to_plot[i])
-    fig.suptitle(title, size=16)
-    fig.subplots_adjust(top=.5)
+        #fig.subplots_adjust(top=0.5)
+    #fig.subplots_adjust(top=.5)
+    #fig.suptitle(title, size=12)
+    #fig.subplots_adjust(hspace=0.4, wspace=0.4)
+    #fig.subplots_adjust(top=.5)
     plt.show()
 
 
-def plot_mutational_spectra(matrix, species_name, title='',
-                            kelley_notation=False):
-    if not kelley_notation:
-        if len(matrix['SUBS'].values[:]) > 96:
+import matplotlib.backends.backend_pdf
+
+def plot_mutational_spectra(matrix, species_names, title='',
+                            kelley_notation=False,
+                            save_to_pdf=False):
+    if save_to_pdf:
+        pp = matplotlib.backends.backend_pdf.PdfPages("output.pdf")
+    for species_name in species_names:
+        if not kelley_notation:
+            if len(matrix['SUBS'].values[:]) > 96:
+                g = sns.FacetGrid(matrix, col="SUBS", hue="SUBS", col_wrap=6,
+                                  col_order=['C>A', 'C>G', 'C>T', 'T>A', "T>C",
+                                             "T>G",'G>T', 'G>T', 'G>A', 'A>T', "A>G",
+                                             "A>C"])
+            else:
+                g = sns.FacetGrid(matrix, col="SUBS", hue="SUBS", col_wrap=6,
+                                  col_order=['C>A', 'C>G', 'C>T', 'T>A', "T>C",
+                                             "T>G"])
+        if kelley_notation:
             g = sns.FacetGrid(matrix, col="SUBS", hue="SUBS", col_wrap=6,
-                              col_order=['C>A', 'C>G', 'C>T', 'T>A', "T>C",
-                                         "T>G",
-                                         'G>T', 'G>T', 'G>A', 'A>T', "A>G",
-                                         "A>C"])
+                              col_order=['C>A', 'C>G', 'C>T', 'A>G', "A>C", "A>T"])
+        g.map(sns.barplot, "Context", species_name)
+        g.set_xticklabels(rotation=90)
+        g.set_titles("{col_name} ")
+        g.fig.subplots_adjust(top=.5)
+        g.fig.suptitle(title, size=16)
+        if save_to_pdf:
+            plt.savefig(pp, format='pdf')
         else:
-            g = sns.FacetGrid(matrix, col="SUBS", hue="SUBS", col_wrap=6,
-                              col_order=['C>A', 'C>G', 'C>T', 'T>A', "T>C",
-                                         "T>G"])
-    if kelley_notation:
-        g = sns.FacetGrid(matrix, col="SUBS", hue="SUBS", col_wrap=6,
-                          col_order=['C>A', 'C>G', 'C>T', 'A>G', "A>C", "A>T"])
-    g.map(sns.barplot, "Context", species_name)
-    g.set_xticklabels(rotation=90)
-    g.set_titles("{col_name} ")
-    g.fig.suptitle(title, size=16)
-    g.fig.subplots_adjust(top=.5)
-
-    plt.show()
+            plt.show()
+    if save_to_pdf:
+        pp.close()
 
 
-def with_context_norm():
+
+
+
+def run_process():
     m192_raw_filename = os.path.join(MATRICES_PATH, '192_matrix.recent.csv')
 
-    # normalize 192 by context counts and contribution sum per species
+
+
+    #roll up and normalize 96 ONLY by sum as in paper
+    m96_kelley_notation_filename = \
+        reduce_192_to_96_kelley_notation(path_to_192_matrix=m192_raw_filename)
+    m96_kelley_not_norm = pd.read_csv(m96_kelley_notation_filename, sep='\t')
+    m96_kelley = normalize_matrix_to_type_sum(m96_kelley_not_norm)
+
+
+    ##normalize 192 BOTH by context abundance and sum and roll up in PAPER notation
     m192_norm_filename = normalize_frequencies_192_context(
-        path_to_192_matrix=m192_raw_filename)
-    m192_norm_sum_filename = normalize_96_to_total_sum(
-        path_to_96_matrix=m192_norm_filename)
+    path_to_192_matrix=m192_raw_filename)
+    m96_kelley_norm_filename = reduce_192_to_96_kelley_notation(m192_norm_filename)
+    m96_kelley_norm = pd.read_csv(m96_kelley_norm_filename, sep='\t')
 
-    # rollup to 96 and norm to contribution
-    m96_common_filename = \
+    ##normalize 192 BOTH by context abundance and sum and roll up in COMMON notation
+    #common notation to plot spectra as in cosmic
+    m192 = pd.read_csv(m192_norm_filename, sep='\t')
+    m96_norm_common_filename = \
         reduce_192_to_96_common_notation(path_to_192_matrix=m192_norm_filename)
-    m96_common_normsum_filename = \
-        normalize_96_to_total_sum(path_to_96_matrix=m96_common_filename)
+    m96 = pd.read_csv(m96_norm_common_filename, sep='\t')
 
-    # just roll up and normalize by sum as in paper
-    m96_filename_normc_kelley_notation = \
-        reduce_192_to_96_kelley_notation(path_to_192_matrix=m192_norm_filename)
-    m96_filename_normcs_kelley = \
-        normalize_96_to_total_sum(
-            path_to_96_matrix=m96_filename_normc_kelley_notation)
-
-    # plotting spectra
-    m96 = pd.read_csv(m96_common_normsum_filename, sep='\t')
-    m96_norm_kelley = pd.read_csv(m96_filename_normcs_kelley, sep='\t')
-    m192 = pd.read_csv(m192_norm_sum_filename, sep='\t')
-
-    plot_mutational_spectra(matrix=m192,
-                            species_name='hg38_VS_panTro4.r_ponA',
-                            title='192 normalized by context and sum ')
-
-    plot_mutational_spectra(matrix=m96,
-                            species_name='hg38_VS_panTro4.r_ponA',
-                            title='192 normalized by context and sum, reduced to 96')
-
-    plot_mutational_spectra(matrix=m96_norm_kelley,
-                            species_name='hg38_VS_panTro4.r_ponA',
-                            title='192 normalized reduced to 96 in kelley not ',
-                            kelley_notation=True)
+    # # plotting spectra
+    # plot_mutational_spectra(matrix=m192,
+    #                         species_names=['hg38_VS_panTro4.r_ponA'],
+    #                         title='192 normalized by context and sum ')
+    #
+    # species_to_plot = ['hg38_VS_panTro4.r_ponA',
+    #                    'panTro4_VS_panPan1.r_ponA',
+    #                    'panPan1_VS_gorGor3.r_ponA',
+    #                    'gorGor3_VS_ponAbe2.r_nomL',
+    #                    'ponAbe2_VS_nomLeu3.r_rheM',
+    #                    ]
+    # plot_mutational_spectra(matrix=m96,
+    #                         species_names=species_to_plot,
+    #                         title='96 normalized by context and sum',
+    #                         save_to_pdf=False)
+    #
+    #
+    # plot_mutational_spectra(matrix=m96_kelley,
+    #                         species_names=species_to_plot,
+    #                         title='Without context norm ',
+    #                         kelley_notation=True,
+    #                         save_to_pdf=False)
 
     # plotting heatmaps
-    ratios_df = create_ratio_table(
-        path_to_matrix_file= m96_filename_normcs_kelley)
-    ratios_list = ['hg38_VS_panTro4.r_ponA', "hg38_VS_ponAbe2.r_nomL",
-                   "gorGor3_VS_ponAbe2.r_nomL"]
+    ratios_df = create_ratio_table(m96=m96_kelley_norm)
+    ratios_list = ['hg38_VS_panTro4','hg38_VS_ponAbe2',"panTro4_VS_ponAbe2","panPan1_VS_ponAbe2", "hg38_VS_ponAbe2",
+                   "gorGor3_VS_ponAbe2"]
     plot_heatmaps_from_ratios_list(ratios_table=ratios_df,
-                                   ratios_to_plot=ratios_list)
+                                   ratios_to_plot=ratios_list,
+                                   title='norm by context count and type contribution',
+                                   kelley_notation=True)
+
+    ratios_df = create_ratio_table(m96=m96_kelley)
+    plot_heatmaps_from_ratios_list(ratios_table=ratios_df,
+                                   ratios_to_plot=ratios_list,
+                                   title='morm only by type sum as in paper ',
+                                   kelley_notation=True)
 
 
-with_context_norm()
-# matrix_to_r_output(
-#     os.path.join(MATRICES_PATH, '96matrix.recent.normalized.csv'),
-#     new_order=False)
+
+run_process()
+
+
+matrix_to_r_output(
+    os.path.join(MATRICES_PATH, '96matrix.recent.norm_sum_cont.csv'),
+    new_order=False)
 # matrix_to_r_output(
 #     os.path.join(MATRICES_PATH, '96matrix.recent.normalized.csv'),
 #     new_order=True)
 
-
-def kelley_norm():
-    m96_filename = \
-        reduce_192_to_96_kelley_notation(path_to_192_matrix=
-                                         os.path.join(MATRICES_PATH,
-                                                      '192_matrix.recent.csv'))
-    norm_matrix_kelly_filename = \
-        normalize_96_to_total_sum(path_to_96_matrix=m96_filename)
-    ratios_df = create_ratio_table(path_to_matrix_file=
-                                   norm_matrix_kelly_filename)
-
-    # plotting spectra
-    m96 = pd.read_csv(norm_matrix_kelly_filename, sep='\t')
-    spectra_to_plot = ['hg38_VS_panTro4.r_ponA', 'panTro4_VS_hg38.r_ponA']
-    for colname in spectra_to_plot:
-        g = sns.FacetGrid(m96, col="SUBS", hue="SUBS", col_wrap=6)
-        g.map(sns.barplot, "Context", colname)
-        g.set_xticklabels(rotation=90)
-        g.set_titles("{col_name} ")
-        plt.show()
-
-    # plotting heatmaps
-    relations_to_plot = ['hg38_VS_panTro4.r_ponA', 'panTro4_VS_hg38.r_ponA']
-    heatmaps_to_plot = [
-        create_heatmap_df_for_species_kelley(relations_df=ratios_df,
-                                             column_name=x)
-        for x in relations_to_plot]
-
-    fig = plt.figure(figsize=(20, 10))
-    fig.subplots_adjust(hspace=0.4, wspace=0.4)
-    for i, heatmap in enumerate(heatmaps_to_plot):
-        ax = fig.add_subplot(1, len(heatmaps_to_plot), i + 1)
-        # ax.text(0.5, 0.5, str((1, 4, i)), fontsize=18, ha='center')
-        sns.heatmap(heatmap, annot=True, annot_kws={"size": 9}, linewidths=.6,
-                    center=1, cmap='RdBu_r', ax=ax)
-        fig.subplots_adjust(hspace=0.8)
-        ax.set_title(relations_to_plot[i])
-    plt.show()

@@ -10,7 +10,7 @@ from tools.set_env import Environment
 
 def create_vcf_name_from_pair_and_ref(sp_name, sp_pair, refname, filt=False):
     if not filt:
-        return os.path.join(VCF_VARIANT_PATH, sp_name + '_VS_' + sp_pair + '.r_' + refname[:4] + '.vcf')
+        return os.path.join(VCF_VARIANT_PATH, sp_name + '_VS_' + sp_pair + '.r_' + refname + '.vcf')
 
 def make_vcf_filt_names(sp_vcf_old_names_list):
     res_list = []

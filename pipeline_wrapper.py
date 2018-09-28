@@ -17,26 +17,26 @@ def pipeline(run_id):
              'chr13', 'chr14', 'chr15', 'chr16',
              'chr17', 'chr18', 'chr19', 'chr20',
              'chr21', 'chr22']
-    #chr_names=['chrX']#
-    for runid in [0]:
-        run_id=str(runid)
-        pairs_list = input_data.get_pairs_by_run_id(run_id=run_id)
+    #for run_id in input_data.run_ids_and_pairs.keys():
+    #for run_id in [999]:
+        #chr_names=['chr1']
+        #run_id=str(run_id)
+    pairs_list = input_data.get_pairs_by_run_id(run_id=run_id)
 
-        processed_files = variant_call_pairs(pairs_list, chr_names, run_id=run_id)
-        processed_files = create_output_file_names(pairs_list)
+    processed_files = variant_call_pairs(pairs_list, chr_names, run_id=run_id)
+    #processed_files = create_output_file_names(pairs_list)
 
-        filtered_vcfs = filtering_vcf_files(processed_files, run_id=run_id)
-        filtered_vcfs = make_vcf_filt_names(processed_files)
-        print(filtered_vcfs)
+    filtered_vcfs = filtering_vcf_files(processed_files, run_id=run_id)
+    #filtered_vcfs = make_vcf_filt_names(processed_files)
 
-        matrix_name = gen192_matrix_from_filtered_vcf(
-            filt_vcf_names_list=filtered_vcfs, run_id=run_id)
+    matrix_name = gen192_matrix_from_filtered_vcf(
+        filt_vcf_names_list=filtered_vcfs, run_id=run_id)
 
-        norm_matrix_name = normalize_frequencies_192_context(path_to_192_matrix=matrix_name, run_id=run_id)
+    #norm_matrix_name = normalize_frequencies_192_context(path_to_192_matrix=matrix_name, run_id=run_id)
 
-        m96_matrix_name = reduce_192_to_96_common_notation(path_to_192_matrix=norm_matrix_name, run_id=run_id)
+    #m96_matrix_name = reduce_192_to_96_common_notation(path_to_192_matrix=norm_matrix_name, run_id=run_id)
 
-        matrix_to_r_output(path_to_96_matrix= m96_matrix_name, run_id='999')
+    #matrix_to_r_output(path_to_96_matrix= m96_matrix_name, run_id='999')
 
     print('completed')
     return

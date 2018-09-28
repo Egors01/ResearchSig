@@ -16,6 +16,7 @@
             <excludedPath path="/find_sig_project/project_path/data" />
             <excludedPath path="/find_sig_project/project_path/core_scripts/exome_filtering.py" />
             <excludedPath local="true" path="$PROJECT_DIR$/core_scripts/plot_spectra.py" />
+            <excludedPath path="/find_sig_project/project_path/data/ancestral_vcfs" />
           </excludedPaths>
         </serverdata>
       </paths>

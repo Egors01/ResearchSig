@@ -10,7 +10,14 @@ SPECIES_NAMES = ['calJac3', 'canFam3', 'chlSab2', 'gorGor3', 'hg38', 'macFas5', 
                  'micMur1', 'nasLar1', 'nomLeu3', 'panPan1', 'panTro4',
                  'papAnu2', \
                  'ponAbe2', 'rheMac3', 'rhiRox1', 'saiBol1', 'tarSyr2']
-
+REF_NAMES = ['leaf.9', 'leaf.10', 'leaf.11', 'inner.12', 'inner.13',
+             'inner.14', 'inner.15', 'inner.16', 'inner.17', 'inner.18',
+             'inner.19', 'inner.20']
+ANCESTRAL_COLNAMES= ['chromosome', 'position', 'leaf.1', 'leaf.2', 'leaf.3',
+                      'leaf.4', 'leaf.5', 'leaf.6', 'leaf.7', 'leaf.8',
+                      'leaf.9', 'leaf.10', 'leaf.11', 'inner.12', 'inner.13',
+                      'inner.14', 'inner.15', 'inner.16', 'inner.17',
+                      'inner.18', 'inner.19', 'inner.20', 'hg18', 'rheMac2']
 PRIMARY_PATH = os.path.dirname(os.path.realpath(__file__))
 ALLOWED_NUCLEOTIDE_SYMBOLS = ['A', 'T', 'G', 'C', 'a', 't', 'g', 'c']
 
@@ -41,7 +48,7 @@ SPECIES_NAMES_PATH = os.path.join(RESOURSES_PATH, 'species_names.csv')
 OUTPUT_VCF_NAMES_PATH = os.path.join(RESOURSES_PATH, 'output_vcf_list.csv')
 OUTPUT_FILT_VCF_NAMES_PATH = os.path.join(RESOURSES_PATH,
                                           'output_filtered_vcf_list.csv')
-EXOME_FILE = os.path.join(EXOME_PATH, 'exomeD.bed')
+EXOME_FILE = os.path.join(EXOME_PATH, 'exome_regions.bed')
 R_ORDER = ["A[C>A]A", "A[C>A]C", "A[C>A]G", "A[C>A]T", "A[C>G]A", "A[C>G]C",
            "A[C>G]G", "A[C>G]T", "A[C>T]A", "A[C>T]C", "A[C>T]G", "A[C>T]T",
            "A[T>A]A", "A[T>A]C", "A[T>A]G", "A[T>A]T", "A[T>C]A", "A[T>C]C",

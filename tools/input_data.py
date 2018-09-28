@@ -1,4 +1,4 @@
-from constants import SPECIES_NAMES
+from constants import SPECIES_NAMES,REF_NAMES
 
 class InputParameters(object):
     def __init__(self):
@@ -10,7 +10,7 @@ class InputParameters(object):
     def add_pair(self, first, second, ref, run_id):
         run_id=str(run_id)
         for sp_name in [first, second, ref]:
-            if sp_name in SPECIES_NAMES:
+            if sp_name in [SPECIES_NAMES,REF_NAMES]:
                 pass
             else:
                 Exception('Invalid species name in pair {}\n run id {}'.format(
@@ -25,3 +25,4 @@ class Pair():
         self.reference = ref
     def string(self):
         return self.species_1+' '+self.species_2+' ref '+self.reference
+

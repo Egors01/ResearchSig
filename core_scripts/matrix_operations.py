@@ -6,20 +6,15 @@ import constants
 import os
 import numpy as np
 
-def normalize_96_to_total_sum(path_to_96_matrix):
+def normalize_matrix_to_type_sum(matrix):
     all_context_sum = {}
-    m96 = pd.read_csv(path_to_96_matrix, sep='\t')
-    m96_norm_kelley = m96[['SUBS', 'Context']].copy()
-    for colname in m96.columns.values:
-        if colname != 'SUBS' and colname != 'Context' and colname != 'Full_Context':
-            m96_norm_kelley[colname] = m96[colname] / m96[colname].sum()
-            all_context_sum[colname] = m96[colname].sum()
-    new_matrix_name = path_to_96_matrix.split('.csv')[0] + '.normsum.csv'
-    print(new_matrix_name)
-    m96_norm_kelley.to_csv(new_matrix_name, sep='\t', index=False)
+    matrix_norm_sum = matrix[['SUBS', 'Context']].copy()
+    for colname in matrix.columns.values:
+        if colname != 'SUBS' and colname != 'Context' and colname != 'Full_context':
+            matrix_norm_sum[colname] = matrix[colname] / matrix[colname].sum()
+            all_context_sum[colname] = matrix[colname].sum()
 
-    return new_matrix_name
-
+    return matrix_norm_sum
 
 
 def normalize_frequencies_192_context(path_to_192_matrix, run_id='999',
@@ -52,8 +47,9 @@ def normalize_frequencies_192_context(path_to_192_matrix, run_id='999',
                     name].item()
             m192.ix[idx, colname] = m192.ix[idx, colname] / denominator
 
-    new_matrix_name = path_to_192_matrix.split('.csv')[0] + '.normcontext.csv'
-    m192.to_csv(new_matrix_name, sep='\t', index=False)
+    m192_norm_sum = normalize_matrix_to_type_sum(m192)
+    new_matrix_name = path_to_192_matrix.split('.csv')[0] + '.norm_sum_cont.csv'
+    m192_norm_sum.to_csv(new_matrix_name, sep='\t', index=False)
 
     return new_matrix_name
 
@@ -69,7 +65,8 @@ def get_complementary(nucleotide):
         return "G"
     else:
         return '.'
-
+def reverse_context(context):
+    return "".join([get_complementary(x) for x in ''.join(reversed(context)) ])
 
 def reduce_192_to_96_common_notation(path_to_192_matrix, run_id='999'):
     print('started matrix rollup. File_path ={} \n'.format(path_to_192_matrix))
@@ -83,35 +80,32 @@ def reduce_192_to_96_common_notation(path_to_192_matrix, run_id='999'):
     for colname in colname_to_sp_name.keys():
         for idx in m192.index:
             sbs = m192.ix[idx, 'SUBS']
+            context = m192.ix[idx, 'Context']
             if sbs == 'A>T':
                 m192.ix[idx, 'SUBS'] = 'T>A'
-                m192.ix[idx, 'Context'] = "".join(
-                    [get_complementary(x) for x in m192.ix[idx, 'Context']])
+                m192.ix[idx, 'Context'] = reverse_context(context)
             elif sbs == 'G>C':
                 m192.ix[idx, 'SUBS'] = 'C>G'
-                m192.ix[idx, 'Context'] = "".join(
-                    [get_complementary(x) for x in m192.ix[idx, 'Context']])
+                m192.ix[idx, 'Context'] = reverse_context(context)
             elif sbs == 'G>A':
                 m192.ix[idx, 'SUBS'] = 'C>T'
-                m192.ix[idx, 'Context'] = "".join(
-                    [get_complementary(x) for x in m192.ix[idx, 'Context']])
+                m192.ix[idx, 'Context'] =  reverse_context(context)
             elif sbs == 'A>G':
                 m192.ix[idx, 'SUBS'] = 'T>C'
-                m192.ix[idx, 'Context'] = "".join(
-                    [get_complementary(x) for x in m192.ix[idx, 'Context']])
+                m192.ix[idx, 'Context'] = reverse_context(context)
             elif sbs == 'A>C':
                 m192.ix[idx, 'SUBS'] = 'T>G'
-                m192.ix[idx, 'Context'] = "".join(
-                    [get_complementary(x) for x in m192.ix[idx, 'Context']])
+                m192.ix[idx, 'Context'] = reverse_context(context)
             elif sbs == 'G>T':
                 m192.ix[idx, 'SUBS'] = 'C>A'
-                m192.ix[idx, 'Context'] = "".join(
-                    [get_complementary(x) for x in m192.ix[idx, 'Context']])
+                m192.ix[idx, 'Context'] = reverse_context(context)
 
     m96 = m192.groupby(['SUBS', 'Context'], as_index=False).sum()
 
+
     new_matrix_name = os.path.join(os.path.dirname(path_to_192_matrix),
                                    '96' + path_to_192_matrix.split('192_')[-1])
+
     m96.to_csv(new_matrix_name, sep='\t', index=False)
 
     return new_matrix_name
@@ -128,30 +122,25 @@ def reduce_192_to_96_kelley_notation(path_to_192_matrix, run_id='999'):
     for colname in colname_to_sp_name.keys():
         for idx in m192.index:
             sbs = m192.ix[idx, 'SUBS']
+            context = m192.ix[idx, 'Context']
             if sbs == 'T>A':
                 m192.ix[idx, 'SUBS'] = 'A>T'
-                m192.ix[idx, 'Context'] = "".join(
-                    [get_complementary(x) for x in m192.ix[idx, 'Context']])
+                m192.ix[idx, 'Context'] = reverse_context(context)
             elif sbs == 'G>C':
                 m192.ix[idx, 'SUBS'] = 'C>G'
-                m192.ix[idx, 'Context'] = "".join(
-                    [get_complementary(x) for x in m192.ix[idx, 'Context']])
+                m192.ix[idx, 'Context'] =reverse_context(context)
             elif sbs == 'G>A':
                 m192.ix[idx, 'SUBS'] = 'C>T'
-                m192.ix[idx, 'Context'] = "".join(
-                    [get_complementary(x) for x in m192.ix[idx, 'Context']])
+                m192.ix[idx, 'Context'] = reverse_context(context)
             elif sbs == 'T>C':
                 m192.ix[idx, 'SUBS'] = 'A>G'
-                m192.ix[idx, 'Context'] = "".join(
-                    [get_complementary(x) for x in m192.ix[idx, 'Context']])
+                m192.ix[idx, 'Context'] = reverse_context(context)
             elif sbs == 'T>G':
                 m192.ix[idx, 'SUBS'] = 'A>C'
-                m192.ix[idx, 'Context'] = "".join(
-                    [get_complementary(x) for x in m192.ix[idx, 'Context']])
+                m192.ix[idx, 'Context'] = reverse_context(context)
             elif sbs == 'G>T':
                 m192.ix[idx, 'SUBS'] = 'C>A'
-                m192.ix[idx, 'Context'] = "".join(
-                    [get_complementary(x) for x in m192.ix[idx, 'Context']])
+                m192.ix[idx, 'Context'] = reverse_context(context)
 
     m96 = m192.groupby(['SUBS', 'Context'], as_index=False).sum()
 
@@ -185,58 +174,70 @@ def matrix_to_r_output(path_to_96_matrix,new_order=False, run_id='999'):
 
     return new_matrix_name
 
-def create_ratio_table(path_to_matrix_file):
-    m96 = pd.read_csv(path_to_matrix_file, sep='\t')
+def create_ratio_table(m96):
     relations_df = m96[['SUBS', 'Context']].copy()
     # create df with single column for comparation
-    for colname in m96.columns.values:
-        if colname != 'SUBS' and colname != 'Context':
-            name = colname.split('_')[0]
-            pair = colname.split('_')[2].split('.')[0]
-            ref = colname.split('.r_')[-1]
-            new_col_name = colname
-            pair_col_name = pair + '_VS_' + name + '.r_' + ref
-            if colname not in relations_df.columns.values:
-                relations_df[colname] = m96[colname] / m96[pair_col_name]
-
+    pairs_to_compare = [['panTro4','hg38'],
+                        ['hg38','ponAbe2'],
+                        ['panTro4','ponAbe2'],
+                        ['panPan1','ponAbe2'],
+                        ['gorGor3','ponAbe2'] ]
+    colnames_of_comp = [x for x in m96.columns.values if
+     'VS_hg38' in x and 'nomLeu3' not in x] + ['hg38_VS_panTro4.r_ponA']
+    species_in_colnames = [x.split('_')[0] for x in colnames_of_comp]
+    name_to_col =dict(zip(species_in_colnames,colnames_of_comp))
+    for i,pair in enumerate(pairs_to_compare):
+            first = pair[0]
+            second = pair[1]
+            colname_first = name_to_col[first]
+            colname_second = name_to_col[second]
+            relations_df[first+'_VS_'+second] = m96[colname_first] / m96[colname_second]
+            relations_df[second+'_VS_'+first] = m96[colname_second] / m96[
+                colname_first]
     return relations_df
 
 
-def create_heatmap_df_for_species_common(relations_df, column_name):
-    relations = relations_df
+# def create_heatmap_df_for_species_common(relations_df, column_name):
+#     relations = relations_df
+#
+#     iterables = [['C>A', 'C>G', 'C>T', 'T>A', 'T>C', 'T>G'],
+#                  ["A", "T", "G", "C"]]
+#     index = pd.MultiIndex.from_product(iterables, names=['subs', "3'- "])
+#     template_heatmap_df = pd.DataFrame(np.zeros(shape=(24, 4)),
+#                                        columns={"A", "C", "G", "T"},
+#                                        index=index)
+#     template_heatmap_df = template_heatmap_df[["A", "C", "G", "T"]]
+#
+#     for idx in relations.index:
+#         subs = relations.loc[idx, 'SUBS']
+#         five_prime = relations.loc[idx, 'Context'][0]
+#         three_prime = relations.loc[idx, 'Context'][2]
+#
+#         value = relations.loc[idx, column_name]
+#         template_heatmap_df.loc[subs, five_prime][three_prime] = value
+#
+#     return template_heatmap_df
 
-    iterables = [['C>A', 'C>G', 'C>T', 'T>A', 'T>C', 'T>G'],
-                 ["A", "T", "G", "C"]]
-    index = pd.MultiIndex.from_product(iterables, names=['subs', "3'- "])
+def create_heatmap_df_for_species(relations_df, column_name,kelley_notation=True):
+    relations = relations_df
+    if kelley_notation:
+        iterables = [['C>A', 'C>G', 'C>T', 'A>G', 'A>C','A>T'],
+                     ["T", "G", "C", "A"]]
+        index = pd.MultiIndex.from_product(iterables, names=['subs', "5'- "])
+
+    else:
+        iterables = [['C>A', 'C>G', 'C>T', 'T>A', 'T>C', 'T>G'],
+                     ["A", "T", "G", "C"]]
+        index = pd.MultiIndex.from_product(iterables, names=['subs', "5'- "])
+
     template_heatmap_df = pd.DataFrame(np.zeros(shape=(24, 4)),
                                        columns={"A", "C", "G", "T"},
                                        index=index)
     template_heatmap_df = template_heatmap_df[["A", "C", "G", "T"]]
-
     for idx in relations.index:
         subs = relations.loc[idx, 'SUBS']
-        three_prime = relations.loc[idx, 'Context'][0]
-        five_prime = relations.loc[idx, 'Context'][2]
-        value = relations.loc[idx, column_name]
-        template_heatmap_df.loc[subs, three_prime][five_prime] = value
-
-    return template_heatmap_df
-
-def create_heatmap_df_for_species_kelley(relations_df, column_name):
-    relations = relations_df
-
-    iterables = [['C>A', 'C>G', 'C>T', 'A>G', 'A>C','A>T'],
-                 ["T", "G", "C", "A"]]
-    index = pd.MultiIndex.from_product(iterables, names=['subs', "5'- "])
-    template_heatmap_df = pd.DataFrame(np.zeros(shape=(24, 4)),
-                                       columns={"A", "T", "G", "C"},
-                                       index=index)
-    template_heatmap_df = template_heatmap_df[["A", "C", "G", "T"]]
-
-    for idx in relations.index:
-        subs = relations.loc[idx, 'SUBS']
-        three_prime = relations.loc[idx, 'Context'][2]
         five_prime = relations.loc[idx, 'Context'][0]
+        three_prime = relations.loc[idx, 'Context'][2]
         value = relations.loc[idx, column_name]
         template_heatmap_df.loc[subs,five_prime][three_prime] = value
 
