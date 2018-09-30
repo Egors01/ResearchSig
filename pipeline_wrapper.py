@@ -18,9 +18,8 @@ def pipeline(run_id):
              'chr17', 'chr18', 'chr19', 'chr20',
              'chr21', 'chr22']
     #for run_id in input_data.run_ids_and_pairs.keys():
-    #for run_id in [999]:
-        #chr_names=['chr1']
-        #run_id=str(run_id)
+    run_id = '999'
+    chr_names=['chr1']
     pairs_list = input_data.get_pairs_by_run_id(run_id=run_id)
 
     processed_files = variant_call_pairs(pairs_list, chr_names, run_id=run_id)

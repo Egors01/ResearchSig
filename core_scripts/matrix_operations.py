@@ -174,18 +174,36 @@ def matrix_to_r_output(path_to_96_matrix,new_order=False, run_id='999'):
 
     return new_matrix_name
 
-def create_ratio_table(m96):
+def create_ratio_table(m96,
+                       hg38_pair,hg38_ref,
+                       pantro_pair,pantro_ref,
+                       ponabe_pair,ponabe_ref,
+                       gorgor_pair,gorgor_ref,
+                       panpan_pair,panpan_ref):
     relations_df = m96[['SUBS', 'Context']].copy()
     # create df with single column for comparation
     pairs_to_compare = [['panTro4','hg38'],
                         ['hg38','ponAbe2'],
                         ['panTro4','ponAbe2'],
                         ['panPan1','ponAbe2'],
-                        ['gorGor3','ponAbe2'] ]
-    colnames_of_comp = [x for x in m96.columns.values if
-     'VS_hg38' in x and 'nomLeu3' not in x] + ['hg38_VS_panTro4.r_ponA']
-    species_in_colnames = [x.split('_')[0] for x in colnames_of_comp]
-    name_to_col =dict(zip(species_in_colnames,colnames_of_comp))
+                        ['gorGor3','ponAbe2'],
+                        ['hg38','gorGor3'],
+                        ["panPan1","gorGor3"],
+                        ['panTro4', 'gorGor3'],
+                        ['panPan1', 'panTro4'],
+                        ['panPan1', 'hg38']
+                        ]
+    name_to_col ={
+        'hg38':'hg38'+'_VS_'+hg38_pair+'.r_'+hg38_ref,
+        'panTro4': 'panTro4' + '_VS_' + pantro_pair+'.r_'+pantro_ref,
+        'gorGor3': 'gorGor3' + '_VS_' + gorgor_pair+'.r_'+gorgor_ref,
+        'panPan1': 'panPan1' + '_VS_' + panpan_pair + '.r_' + panpan_ref,
+        'ponAbe2': 'ponAbe2' + '_VS_' + ponabe_pair + '.r_' + ponabe_ref,
+    }
+    # colnames_of_comp = [x for x in m96.columns.values if
+    #  'VS_hg38' in x and 'nomLeu3' not in x] + ['hg38_VS_panTro4.r_ponA']
+    # species_in_colnames = [x.split('_')[0] for x in colnames_of_comp]
+    # name_to_col =dict(zip(species_in_colnames,colnames_of_comp))
     for i,pair in enumerate(pairs_to_compare):
             first = pair[0]
             second = pair[1]

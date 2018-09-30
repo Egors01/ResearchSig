@@ -171,41 +171,66 @@ def chr_variant_call_reconstructed(chr_name, sp_name_1="", sp_name_2="",
     alt_name, context = ['', '']
     [ALT, REF, REFPOS, INFO, CHR, CONTEXT] = [[], [], [], [], [], []]
     [not_liftovered_bases, bases_not_matched] = [[], []]
+    [not_liftovered_pos_counter, base_counter, bases_matched_counter,
+     hg18_coord] \
+        = [0, 0, 0, 0]
 
-    #loading species fasta
+    # loading species fasta
     sp_names = [sp_name_1, sp_name_2]
     f = [open(os.path.join(outputpath, name + ".fasta"), 'r') for name in
          sp_names]
     files = dict(zip(sp_names, f))
+    for name in files.keys():
+        files[name].readline()
 
-    #loading ancestral allels
+    # configuring liftover
+    lo18to38 = LiftOver(
+        os.path.join(path_to_liftovers, 'hg18ToHg38.over.chain.gz'))
+
+    # loading ancestral allels
     ref_column_index = \
         [ind for ind, colname in enumerate(ANCESTRAL_COLNAMES) if
          colname == ref_name][0]
-    columns = [1, ref_column_index]
+
     ref_df = pd.read_csv(os.path.join(
         ancestral_alleles_path, chr_name + '.calls.txt'),
-        skiprows=1, usecols=columns, sep='\t')
+        skiprows=1, usecols=[1, ref_column_index], sep='\t')
     ref_df.columns = ['position', ref_name]
-    ref_df = ref_df.set_index(['position'],drop=False)
-    max_ref_pos = ref_df.index[-1]
+    # ref_df = ref_df.set_index(['position'],drop=False)
 
-    #configuring liftovers
-    lo38to19 = LiftOver(
-        os.path.join(path_to_liftovers, 'hg38ToHg19.over.chain.gz'))
-    lo19to18 = LiftOver(
-        os.path.join(path_to_liftovers, 'hg19ToHg18.over.chain.gz'))
-    [not_liftovered_pos_counter, base_counter,bases_not_matched_counter,hg18_coord]\
-        = [0, 0, 0, 0]
+    ref_df['hg38_pos'] = pd.Series(
+        [lo18to38.convert_coordinate(chr_name, x)[0][1]
+         if lo18to38.convert_coordinate(chr_name, x) != []
+         else -1
+         for x in ref_df['position']]).values
+    hg38_coord_min = get_ref_startpos(chr_name)
+    # sorting by liftovered coords and removind indefinite states
+    ref_df = ref_df.sort_values(by=['hg38_pos'], ascending=True)
+    ref_df = ref_df.drop(ref_df[ref_df['hg38_pos'] == -1].index)
+    ref_df = ref_df.loc[
+        ref_df[ref_name].str.contains('^[ATGCatgc]$', regex=True)]
+
+    ref_df = ref_df.drop_duplicates(['hg38_pos'])
+    ref_pos_min = ref_df['hg38_pos'].min()
+    ref_df = ref_df.drop(ref_df[ref_df['hg38_pos'] <= hg38_coord_min].index)
+
+    ref_df = ref_df.reset_index(drop=True)
+    print('ref_df_shape ', ref_df.shape)
+
+    ref_df_indexer = 0
+    max_ref_pos = ref_df['hg38_pos'].values[-1]
+    hg38_coord = get_ref_startpos(chr_name)
+
+
 
     # start looping in file
-    for name in files.keys():
-        files[name].readline()
     [sp_1_prev, sp_2_prev] = [files[sp_name_1].read(1).upper(),
                               files[sp_name_2].read(1).upper()]
     [sp_1_nuc, sp_2_nuc] = [files[sp_name_1].read(1).upper(),
                             files[sp_name_2].read(1).upper()]
-    hg38_coord = get_ref_startpos(chr_name)
+    ref_nuc = ref_df.loc[ref_df_indexer, ref_name]
+    ref_pos = ref_df.loc[ref_df_indexer, 'hg38_pos']
+
     hg38_coord += 1
     while True:
         [sp_1_next, sp_2_next] = [files[sp_name_1].read(1).upper(),
@@ -213,25 +238,18 @@ def chr_variant_call_reconstructed(chr_name, sp_name_1="", sp_name_2="",
         hg38_coord += 1
         base_counter += 1
         alt = 'undef_n'
-        if bool(re.match(r'[ATGCatgc]', sp_1_nuc)) and \
-                bool(re.match(r'[ATGCatgc]', sp_2_nuc)):
-            if sp_1_nuc != sp_2_nuc:
-
-                try:
-                    hg19_coord = \
-                        lo38to19.convert_coordinate(chr_name, hg38_coord)[0][1]
-                    hg18_coord = \
-                        lo19to18.convert_coordinate(chr_name, hg19_coord)[0][1]
-                except:
-                    not_liftovered_pos_counter += 1
-                    continue
-                try:
-                    ref_nuc = ref_df.loc[hg18_coord][ref_name]
-                except:
-                    bases_not_matched_counter += 1
-                    continue
-
-                if ref_nuc in ['A', 'T', 'G', 'C']:
+        # comapre only for coords that present in mrca
+        if hg38_coord > ref_pos:
+            variant_call_logger.message(
+                msg='Error when comparing ref_df index {df_index} ref_pos {ref_pos} hg38coord {hg38_coord} '
+                    .format(df_index=ref_df_indexer,
+                            hg38_coord=hg38_coord,
+                            ref_pos=ref_pos))
+        if hg38_coord == ref_pos:
+            if bool(re.match(r'[ATGCatgc]', sp_1_nuc)) and \
+                    bool(re.match(r'[ATGCatgc]', sp_2_nuc)):
+                if sp_1_nuc != sp_2_nuc:
+                    bases_matched_counter += 1
                     if not (sp_1_nuc != ref_nuc and sp_2_nuc != ref_nuc):
                         if sp_1_nuc == ref_nuc:
                             alt = sp_2_nuc
@@ -259,28 +277,42 @@ def chr_variant_call_reconstructed(chr_name, sp_name_1="", sp_name_2="",
                                                   context_alt))):
                                 info += '_badcontext'
                             INFO.append(info)
+            ref_df_indexer += 1
+            ref_nuc = ref_df.loc[ref_df_indexer, ref_name]
+            ref_pos = ref_df.loc[ref_df_indexer, 'hg38_pos']
         # next step indide the file
         [sp_1_prev, sp_2_prev] = [sp_1_nuc, sp_2_nuc]
         [sp_1_nuc, sp_2_nuc] = [sp_1_next, sp_2_next]
 
-        if hg38_coord % 40000000 == 0:
+        if hg38_coord % 20000000 == 0:
             variant_call_logger.message(
-                'reached {chr_name}:{hg38_coord} position'.format(
-                    chr_name=chr_name, hg38_coord=hg38_coord))
-        if not sp_1_nuc or not sp_2_nuc:
+                'passed {chr_name}: {hg38_coord} ' 
+                ' {matched_bases} bases matched'.format(
+                    chr_name=chr_name, hg38_coord=hg38_coord,
+                matched_bases=bases_matched_counter))
+
+        if not sp_1_nuc or not sp_2_nuc or ref_pos == max_ref_pos:
+            print('stopped at ', hg38_coord)
             break
+
     SUBS = [nref.upper() + '>' + nmut.upper() for nref, nmut in zip(REF, ALT)]
     dictdata = {'Chr': CHR, 'SUBS': SUBS, 'Alt': ALT, 'Ref': REF,
                 'Refpos': REFPOS, 'Context': CONTEXT, 'Info': INFO}
     chrdata = pd.DataFrame(dictdata, columns=dictdata.keys())
+
+    if len(SUBS) < 6:
+        variant_call_logger.message(
+            'No varinats found for {chr_name}'.format(chr_name=chr_name))
+        return chrdata, chrdata
+
     data_sp_1 = pd.DataFrame(
         chrdata.loc[chrdata['Chr'] == (chr_name + '_' + sp_name_1)])
     data_sp_2 = pd.DataFrame(
         chrdata.loc[chrdata['Chr'] == (chr_name + '_' + sp_name_2)])
-    variant_call_logger.message(
-        'there are {notlift} not liftovered bases; there are {not_matched} not_matched'
-        .format(notlift=not_liftovered_pos_counter,
-                not_matched=bases_not_matched_counter))
+
+    variant_call_logger.message('there are {matched} matched bases'
+                                .format(matched=bases_matched_counter))
+
     return data_sp_1, data_sp_2
 
 

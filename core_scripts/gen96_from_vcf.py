@@ -56,9 +56,9 @@ def gen192_matrix_from_filtered_vcf(filt_vcf_names_list, run_id=None):
         vcf_data = pd.read_csv(filename, sep='\t', skiprows=0, header=None,
                                names=["CHROM", "POS", "ID", "REF", "ALT",
                                       "QUAL", "FILTER", "INFO"])
-        print(vcf_data.head())
-        vcf_data = vcf_data.drop(
-            vcf_data[vcf_data['INFO'].str.contains('bad') == True].index)
+        # print(vcf_data.head())
+        # vcf_data = vcf_data.drop(
+        #     vcf_data[vcf_data['INFO'].str.contains('bad') == True].index)
         vcf_data['Sample'] = vcf_data['ID'].str.split('_', expand=True)[1]
         vcf_data['Context'] = vcf_data['ID'].str.split('_', expand=True)[3]
         vcf_data['SUBS'] = vcf_data['REF'].str[:] + '>' + vcf_data['ALT'].str[:]
